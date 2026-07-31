@@ -109,11 +109,15 @@
                 <img src="logo.png" alt="Massebo Logo" class="brand-logo-img">
                 <span class="fs-5 tracking-wide" style="font-family: var(--font-heading);">MASSEBO POS</span>
             </a>
-            <div class="d-flex align-items-center gap-3">
+            <div class="d-flex align-items-center gap-2">
                 <span class="badge bg-white text-success px-3 py-2 rounded-pill fw-semibold shadow-sm d-none d-sm-inline">
                     <i class="bi bi-geo-alt-fill me-1"></i> Muleba Mjini
                 </span>
-                <a href="index.html" class="btn btn-outline-light btn-sm rounded-pill px-4 fw-semibold">Store Front</a>
+                <!-- Print Barcodes Navigation Button -->
+                <a href="barcodes.html" class="btn btn-warning btn-sm rounded-pill px-3 fw-bold text-dark shadow-sm">
+                    <i class="bi bi-upc-scan me-1"></i> Print Barcodes
+                </a>
+                <a href="index.html" class="btn btn-outline-light btn-sm rounded-pill px-3 fw-semibold">Store Front</a>
             </div>
         </div>
     </nav>
@@ -234,7 +238,7 @@
         </div>
     </div>
 
-    <!-- Bootstrap 5 Loading Spinner Modal (Replaces browser alerts) -->
+    <!-- Bootstrap 5 Loading Spinner Modal -->
     <div class="modal fade" id="loadingModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-sm">
             <div class="modal-content rounded-4 border-0 shadow text-center p-4">
@@ -483,7 +487,6 @@
             let summary = posCart.map(i => `${i.quantity}x ${i.name}`).join(', ');
             let total = posCart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
-            // Show Bootstrap loading modal while request processes
             loadingModal.show();
 
             try {
