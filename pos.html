@@ -45,7 +45,7 @@
             border-color: var(--bs-primary);
         }
         .tile-img-wrapper {
-            height: 110px;
+            height: 100px;
             overflow: hidden;
             background: #f8f9fa;
         }
@@ -57,10 +57,20 @@
         .dashboard-card {
             border-left: 4px solid #1b4332;
         }
+        /* Square Camera Viewfinder Box */
         #reader {
             border: none !important;
             border-radius: 12px;
             overflow: hidden;
+            width: 100% !important;
+            max-width: 280px;
+            aspect-ratio: 1 / 1;
+            margin: 0 auto;
+        }
+        #reader video {
+            object-fit: cover;
+            width: 100% !important;
+            height: 100% !important;
         }
         #reader__dashboard_section_csr button {
             background-color: #1b4332 !important;
@@ -128,12 +138,12 @@
         </div>
 
         <div class="row g-3">
-            <!-- Left Side: Camera Scanner, Manual Input & Catalog -->
+            <!-- Left Side: Square Camera Scanner, Manual Input & Hiding Catalog Menu -->
             <div class="col-12 col-lg-7">
-                <!-- Camera Barcode Scanner Widget Box -->
+                <!-- Square Camera Barcode Scanner Widget Box -->
                 <div class="card border-0 shadow-sm rounded-4 p-3 mb-3 bg-white text-center">
                     <h6 class="fw-bold text-success mb-2 text-start"><i class="bi bi-camera me-1"></i> Camera Barcode Scanner</h6>
-                    <div id="reader" class="w-100 bg-light rounded-3 mb-2" style="min-height: 180px;"></div>
+                    <div id="reader" class="bg-light rounded-3 mb-2"></div>
                     <small class="text-muted" style="font-size: 0.75rem;">Point your camera at a barcode to scan automatically.</small>
                 </div>
 
@@ -147,13 +157,19 @@
                     </div>
                 </div>
 
-                <!-- Product Selection Grid -->
-                <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
-                    <h6 class="fw-bold mb-2">Quick Tap Catalog</h6>
-                    <div class="row g-2 overflow-auto" id="posProductCatalog" style="max-height: 35vh;">
-                        <div class="col-12 text-center py-4">
-                            <div class="spinner-border spinner-border-sm text-success" role="status"></div>
-                            <p class="text-muted small mt-2 mb-0">Loading inventory...</p>
+                <!-- Hiding Quick Tap Catalog Menu Button & Section -->
+                <div class="card border-0 shadow-sm rounded-4 p-3 bg-white mb-3">
+                    <button class="btn btn-outline-success w-100 rounded-pill py-2 fw-semibold d-flex align-items-center justify-content-center gap-2 shadow-sm" type="button" data-bs-toggle="collapse" data-bs-target="#catalogCollapseSection" aria-expanded="false" aria-controls="catalogCollapseSection">
+                        <i class="bi bi-grid-fill"></i> Toggle Catalog Menu
+                    </button>
+                    
+                    <div class="collapse mt-3" id="catalogCollapseSection">
+                        <h6 class="fw-bold mb-2 text-success small text-uppercase">Quick Tap Catalog Items</h6>
+                        <div class="row g-2 overflow-auto" id="posProductCatalog" style="max-height: 38vh;">
+                            <div class="col-12 text-center py-4">
+                                <div class="spinner-border spinner-border-sm text-success" role="status"></div>
+                                <p class="text-muted small mt-2 mb-0">Loading menu catalog...</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -193,6 +209,9 @@
         </div>
     </div>
 
+    <!-- Bootstrap JS Bundle (Required for Collapse Toggle to Work) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
     <!-- POS Logic & Camera Scanner Script -->
     <script>
         let inventory = [];
@@ -214,7 +233,7 @@
                 document.getElementById('monthlySalesDisplay').innerText = `Tshs ${Number(metrics.monthlyTotal).toLocaleString()}/=`;
             } catch (error) {
                 console.error("Error loading POS data:", error);
-                document.getElementById('posProductCatalog').innerHTML = '<p class="text-danger text-center small">Failed to load inventory.</p>';
+                document.getElementById('posProductCatalog').innerHTML = '<p class="text-danger text-center small">Failed to load inventory menu.</p>';
             }
         }
 
@@ -225,7 +244,7 @@
 
         function initCameraScanner() {
             const html5QrCode = new Html5Qrcode("reader");
-            const config = { fps: 10, qrbox: { width: 200, height: 120 } };
+            const config = { fps: 10, qrbox: { width: 180, height: 180 } };
             
             html5QrCode.start(
                 { facingMode: "environment" }, 
@@ -278,8 +297,8 @@
             container.innerHTML = '';
             items.forEach(product => {
                 container.innerHTML += `
-                    <div class="col-6 col-sm-4 col-md-3">
-                        <div class="card product-tile h-100 rounded-3 overflow-hidden" onclick="addToPOSCart('${product.name}', ${product.price}, '${product.image}')">
+                    <div class="col-6 col-sm-4">
+                        <div class="card product-tile h-100 rounded-3 overflow-hidden" onclick="handleMenuCatalogClick('${product.name}', ${product.price}, '${product.image}')">
                             <div class="tile-img-wrapper">
                                 <img src="${product.image}" alt="${product.name}" class="tile-img">
                             </div>
@@ -291,6 +310,10 @@
                     </div>
                 `;
             });
+        }
+
+        function handleMenuCatalogClick(name, price, img) {
+            addToPOSCart(name, price, img);
         }
 
         const barcodeInput = document.getElementById('barcodeInput');
@@ -308,12 +331,11 @@
         function processSearchInput() {
             let query = barcodeInput.value.trim().toLowerCase();
             if (!query) {
-                return; // Do nothing if input is empty
+                return;
             }
 
             let foundProduct = inventory.find(p => (p.barcode && p.barcode.toLowerCase() === query) || p.name.toLowerCase().includes(query));
             if (foundProduct) {
-                playScanBeep();
                 addToPOSCart(foundProduct.name, foundProduct.price, foundProduct.image);
                 barcodeInput.value = '';
             } else {
