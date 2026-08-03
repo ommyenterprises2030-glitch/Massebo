@@ -34,16 +34,12 @@
             border-radius: 50%;
             background: #ffffff;
         }
-        /* Optimized Grid Layout to eliminate excess whitespace */
+        
+        /* Onscreen container is hidden from normal view */
         .barcode-sheet-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 4mm;
-            padding: 0;
-            background: #ffffff;
-            width: 100%;
-            margin: 0 auto;
+            display: none;
         }
+        
         .barcode-label-card {
             width: 100%;
             height: 35mm;
@@ -60,7 +56,7 @@
             box-sizing: border-box;
         }
         
-        /* Strict Print Rules to fit exact A4 page without spilling over or leaving white gaps */
+        /* Print Rules: Hides dashboard and reveals barcodes grid exclusively to printer */
         @media print {
             @page {
                 size: A4;
@@ -74,24 +70,27 @@
                 padding: 0 !important;
             }
             body * {
-                visibility: hidden;
+                visibility: hidden !important;
             }
             #printableSheetArea, #printableSheetArea * {
-                visibility: visible;
+                visibility: visible !important;
             }
             #printableSheetArea {
                 position: absolute;
                 left: 0;
                 top: 0;
                 width: 200mm;
-                margin: 0 auto;
+                display: grid !important;
+                grid-template-columns: repeat(3, 1fr) !important;
+                gap: 4mm !important;
+                margin: 0 auto !important;
             }
             .no-print {
                 display: none !important;
             }
             .barcode-label-card {
-                border: 1px solid #000;
-                box-shadow: none;
+                border: 1px solid #000 !important;
+                box-shadow: none !important;
             }
         }
     </style>
@@ -112,10 +111,10 @@
     </nav>
 
     <!-- Main Container -->
-    <div class="container py-4">
+    <div class="container py-4 no-print">
         
         <!-- Controls Header Card -->
-        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4 no-print">
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
             <h4 class="fw-bold text-success mb-2"><i class="bi bi-upc-scan me-2"></i>Multiple Barcode Sheet Printer</h4>
             <p class="text-muted small mb-3">Select a product and choose how many copies you want to generate to fit snugly across an A4 page.</p>
             
@@ -131,6 +130,8 @@
                     <select id="copiesSelect" class="form-select form-select-lg border shadow-sm fs-6" onchange="renderBarcodeSheet()">
                         <option value="12">12 Labels</option>
                         <option value="18">18 Labels</option>
+                        <option value="21" selected>21 Labels</option>
+        
                         <option value="24">24 Labels</option>
                         <option value="30" selected>30 Labels (Full A4 Page)</option>
                         <option value="33">33 Labels</option>
@@ -143,16 +144,11 @@
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Printable Grid Area -->
-        <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
-            <div class="barcode-sheet-grid" id="printableSheetArea">
-                <div class="col-12 text-center py-5">
-                    <div class="spinner-border text-success" role="status"></div>
-                    <p class="text-muted small mt-2">Loading inventory...</p>
-                </div>
-            </div>
-        </div>
+    <!-- Printable Sheet Area (Hidden from normal screen view, displayed only in print preview) -->
+    <div class="barcode-sheet-grid" id="printableSheetArea">
+        <!-- Barcodes populate here automatically -->
     </div>
 
     <!-- Script to Fetch Inventory and Render Multiple Duplicate Barcodes -->
